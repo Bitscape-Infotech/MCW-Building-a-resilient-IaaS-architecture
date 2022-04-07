@@ -1,0 +1,187 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "WebLBDnsLabelPrefix": {
+      "type": "string",
+      "defaultValue": "contoso-",
+      "minLength": 1
+    },
+    "Environment": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of environment (e.g. 'Primary' or 'Secondary')"
+      },
+      "minLength": 1
+    },
+    "DataSubnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet Id of the data tier"
+      }
+    },
+    "SQLLBPrivateIPAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "Private IP address for SQL load-balancer frontend"
+      }
+    }
+  },
+  "variables": {
+    "InternalLoadBalancerName": "[concat('ContosoSQLLB', parameters('Environment'))]",
+    "ExternalLoadBalancerName": "[concat('ContosoWebLB', parameters('Environment'))]",
+    "FrontEndName": "FrontEnd1",
+    "RuleName": "Rule1",
+    "BackEndPoolName": "BackEndPool1",
+    "ProbeName": "Probe1",
+    "ExternalLoadBalancerPublicIPName": "[concat(variables('ExternalLoadBalancerName'), 'IP')]",
+    "ExternalLoadBalancerPublicIPDNSName": "[concat(parameters('WebLBDnsLabelPrefix'), take(uniqueString(resourceGroup().id), 4))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-10-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('ExternalLoadBalancerPublicIPName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('ExternalLoadBalancerPublicIPDNSName')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2018-12-01",
+      "name": "[variables('ExternalLoadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "External Load Balancer"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('ExternalLoadBalancerPublicIPName'))]"
+      ],
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('FrontEndName')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ExternalLoadBalancerPublicIPName'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('BackEndPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "[variables('RuleName')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('ExternalLoadBalancerName'), variables('FrontEndName'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('ExternalLoadBalancerName'), variables('BackEndPoolName'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('ExternalLoadBalancerName'), variables('ProbeName'))]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('ProbeName')]",
+            "properties": {
+              "protocol": "tcp",
+              "port": 80,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-12-01",
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('InternalLoadBalancerName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "SQL AOG LoadBalancer"
+      },
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('FrontEndName')]",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('DataSubnetId')]"
+              },
+              "privateIPAddress": "[parameters('SQLLBPrivateIPAddress')]",
+              "privateIPAllocationMethod": "Static"
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('BackEndPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "[variables('RuleName')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('InternalLoadBalancerName'), variables('FrontEndName'))]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('InternalLoadBalancerName'), variables('BackEndPoolName'))]"
+              },
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', variables('InternalLoadBalancerName'), variables('ProbeName'))]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 1433,
+              "backendPort": 1433,
+              "idleTimeoutInMinutes": 4,
+              "enableFloatingIP": true
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('ProbeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 59999,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    }   
+  ],
+  "outputs": {}
+}

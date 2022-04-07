@@ -1,0 +1,224 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "skuSizeVM": {
+      "defaultValue": "D2s_v3",
+      "type": "string",
+      "metadata": {
+        "description": "Size of Virtual Machines to use"
+      },
+      "allowedValues": [
+        "D2s_v3",
+        "D2s_v5",
+        "DC2s_v3"
+      ]
+    },
+    "ADVMName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the domain controller VM to create"
+      }
+    },
+    "AvailabilityZone": {
+      "type": "string",
+      "metadata": {
+        "description": "Availability zone to deploy to"
+      }
+    },
+    "ADSubnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "Id of the subnet to deploy the AD VM to"
+      }
+    },
+    "ADVMPrivateIPAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "Private IP address for the AD VM"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "demouser",
+      "metadata": {
+        "description": "The name of the administrator account of the new VM and domain"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "defaultValue": "Demo!pass123",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM and domain"
+      }
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": "contoso.com",
+      "metadata": {
+        "description": "The FQDN of the Active Directory domain"
+      }
+    },
+    "newDomain": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Use 'true' to create a new domain, 'false' to attach to existing domain"
+      }
+    },
+    "resourceFolder": {
+      "type": "string",
+      "defaultValue": "master/Hands-on%20lab/Resources/"
+    },
+    "baseUri": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
+    }
+  },
+  "variables": {
+    "ADVMImagePublisher": "MicrosoftWindowsServer",
+    "ADVMImageOffer": "WindowsServer",
+    "ADVMWindowsOSVersion": "2019-Datacenter",
+    "ADVMOSDiskName": "[concat(parameters('ADVMName'), 'OSDisk')]",
+    "ADVMDataDiskName": "[concat(parameters('ADVMName'), 'DataDisk1')]",
+    "DiskType": "Premium_LRS",
+    "ADVMVmSize": "[concat('Standard_',parameters('skuSizeVM'))]",
+    "ADVMNicName": "[concat(parameters('ADVMName'), 'NIC')]",
+    "scriptBase": "[concat(parameters('baseUri'), parameters('resourceFolder'), 'scripts/')]",
+    "scriptFileName": "[if(parameters('newDomain'), 'deploy-advm-new.ps1', 'deploy-advm-existing.ps1')]",
+    "pauseFileName": "deploy-hold-vm-new.ps1",
+    "pauseWait": 120,
+    "scriptUrl": "[concat(variables('scriptBase'), variables('scriptFileName'))]",
+    "pauseUrl": "[concat(variables('scriptBase'), variables('pauseFileName'))]",
+    "scriptFolder": "[concat('./',parameters('resourceFolder'),'scripts/')]",
+    "scriptDownload": "[concat('powershell -ExecutionPolicy Unrestricted \"[Net.ServicePointManager]::SecurityProtocol = ''Tls12''; Invoke-WebRequest -uri ', variables('scriptUrl') ,' -OutFile ', variables('scriptFileName'), ' \"')]",
+    "pauseDownload": "[concat('powershell -ExecutionPolicy Unrestricted \"[Net.ServicePointManager]::SecurityProtocol = ''Tls12''; Invoke-WebRequest -uri ', variables('pauseUrl') ,' -OutFile ', variables('pauseFileName'), ' \"')]",
+    "scriptParameters": "[concat(' -user ', parameters('adminUsername'), ' -domain ', parameters('domainName'), ' -password ', parameters('adminPassword'))]"
+  },
+  "resources": [
+    {
+      "name": "[variables('ADVMNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('ADVMPrivateIPAddress')]",
+              "subnet": {
+                "id": "[parameters('ADSubnetId')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('ADVMName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-03-01",
+      "dependsOn": [
+        "[variables('ADVMNicName')]"
+      ],
+      "zones": [
+        "[parameters('AvailabilityZone')]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('ADVMVmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('ADVMName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('ADVMImagePublisher')]",
+            "offer": "[variables('ADVMImageOffer')]",
+            "sku": "[variables('ADVMWindowsOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[variables('ADVMOSDiskName')]",
+            "caching": "None",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "[variables('DiskType')]"
+            }
+          },
+          "dataDisks": [
+            {
+              "name": "[variables('ADVMDataDiskName')]",
+              "diskSizeGB": 128,
+              "lun": 0,
+              "createOption": "Empty",
+              "managedDisk": {
+                "storageAccountType": "[variables('DiskType')]"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('ADVMNicName'))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "name": "InstallAD",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2019-03-01",
+          "dependsOn": [
+            "[parameters('ADVMName')]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.9",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "commandToExecute": "[concat(variables('scriptDownload'),'; powershell -ExecutionPolicy Unrestricted -File ', variables('scriptFileName'), ' ', variables('scriptParameters'))]"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "pauseDeployment",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[parameters('ADVMName')]"
+      ],
+      "kind": "AzurePowerShell",
+      "properties": {
+        "azPowerShellVersion": "6.4",
+        "scriptContent": "param([int]$waitInSeconds); Write-Output \"Holding for $waitInSeconds seconds to ensure AD start up complete...\"; Start-Sleep -Seconds $waitInSeconds; Write-Output 'Done.'",
+        "arguments": "[concat('-waitInSeconds', ' ', variables('pauseWait'))]",
+        "timeout": "PT1H",
+        "cleanupPreference": "OnSuccess",
+        "retentionInterval": "P1D"
+      }
+    }
+  ],
+  "outputs": {
+    "ADVM1PrivateIP": {
+      "type": "string",
+      "value": "[parameters('ADVMPrivateIPAddress')]"
+    },
+    "DomainName": {
+      "type": "string",
+      "value": "[parameters('domainName')]"
+    }
+  }
+}

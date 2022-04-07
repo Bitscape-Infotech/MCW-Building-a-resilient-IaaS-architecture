@@ -1,0 +1,316 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "demouser",
+            "metadata": {
+                "description": "The name of the administrator account of the new VM and domain"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "defaultValue": "Demo!pass123",
+            "metadata": {
+                "description": "The password for the administrator account of the new VM and domain"
+            }
+        },
+        "domainName": {
+            "type": "string",
+            "defaultValue": "contoso.com",
+            "metadata": {
+                "description": "The FQDN of the Active Directory Domain"
+            }
+        },
+        "PrimaryRG": {
+            "type": "string",
+            "defaultValue": "ContosoRG2",
+            "metadata": {
+                "description": "Resource group name of the primary region (must already exist)"
+            }
+        },
+        "SecondaryRG": {
+            "type": "string",
+            "defaultValue": "ContosoRG3",
+            "metadata": {
+                "description": "Resource group name of the secondary region (must already exist)"
+            }
+        }
+    },
+    "variables": {
+        "vnetNamePrimary": "VNet1",
+        "vnetNameSecondary": "VNet2",
+        "baseUri": "https://cloudworkshop.blob.core.windows.net/building-resilient-iaas-architecture/lab-resources/june-2020-update/"
+    },
+    "resources": [
+        {
+            "name": "VirtualNetworkSecondary",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/vnet-dr.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VNetName": {
+                        "value": "[variables('vnetNameSecondary')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Peering",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [
+                "VirtualNetworkSecondary"
+            ],
+            "location": "[deployment().location]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/peering.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VNet1Id": {
+                        "value": "[concat(subscription().Id, '/resourceGroups/', parameters('PrimaryRG'), '/providers/Microsoft.Network/virtualNetworks/', variables('vnetNamePrimary'))]"
+                    },
+                    "VNet2Id": {
+                        "value": "[concat(subscription().Id, '/resourceGroups/', parameters('SecondaryRG'), '/providers/Microsoft.Network/virtualNetworks/', variables('vnetNameSecondary'))]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "VirtualNetworkSecondaryWithPrimaryDNS",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+                "Peering"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/vnet-dr.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VNetName": {
+                        "value": "[variables('vnetNameSecondary')]"
+                    },
+                    "DNSIPs": {
+                        "value": [
+                            "10.0.3.100",
+                            "10.0.3.101"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "name": "ADVM3",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+                "VirtualNetworkSecondaryWithPrimaryDNS"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/deploy-advm.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "ADVMName": {
+                        "value": "ADVM3"
+                    },
+                    "AvailabilityZone": {
+                        "value": "1"
+                    },
+                    "ADSubnetId": {
+                        "value": "[reference('VirtualNetworkSecondary').outputs.ADSubnetId.value]"
+                    },
+                    "ADVMPrivateIPAddress": {
+                        "value": "10.1.3.100"
+                    },
+                    "adminUserName": {
+                        "value": "[parameters('adminUserName')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "domainName": {
+                        "value": "[parameters('domainName')]"
+                    },
+                    "newDomain": {
+                        "value": false
+                    }
+                }
+            }
+        },
+        {
+            "name": "ADVM4",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+                "VirtualNetworkSecondaryWithPrimaryDNS"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/deploy-advm.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "ADVMName": {
+                        "value": "ADVM4"
+                    },
+                    "AvailabilityZone": {
+                        "value": "2"
+                    },
+                    "ADSubnetId": {
+                        "value": "[reference('VirtualNetworkSecondary').outputs.ADSubnetId.value]"
+                    },
+                    "ADVMPrivateIPAddress": {
+                        "value": "10.1.3.101"
+                    },
+                    "adminUserName": {
+                        "value": "[parameters('adminUserName')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "domainName": {
+                        "value": "[parameters('domainName')]"
+                    },
+                    "newDomain": {
+                        "value": false
+                    }
+                }
+            }
+        },
+        {
+            "name": "VirtualNetworkSecondaryWithSecondaryDNS",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+                "ADVM3",
+                "ADVM4"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/vnet-dr.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VNetName": {
+                        "value": "[variables('vnetNameSecondary')]"
+                    },
+                    "DNSIPs": {
+                        "value": [
+                            "10.1.3.100",
+                            "10.1.3.101"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "name": "LoadBalancersSecondary",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/load-balancers.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "Environment": {
+                        "value": "Secondary"
+                    },
+                    "DataSubnetId": {
+                        "value": "[reference('VirtualNetworkSecondary').outputs.DataSubnetId.value]"
+                    },
+                    "SQLLBPrivateIPAddress": {
+                        "value": "10.1.2.100"
+                    }
+                }
+            }
+        },
+        {
+            "name": "SQLVM3",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+                "VirtualNetworkSecondaryWithSecondaryDNS"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/deploy-sqlvm.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SqlVMName": {
+                        "value": "SQLVM3"
+                    },
+                    "AvailabilityZone": {
+                        "value": "1"
+                    },
+                    "adminUserName": {
+                        "value": "[parameters('adminUserName')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "DataSubnetId": {
+                        "value": "[reference('VirtualNetworkSecondary').outputs.DataSubnetId.value]"
+                    },
+                    "domainToJoin": {
+                        "value": "[parameters('domainName')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Bastion",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('SecondaryRG')]",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/VirtualNetworkSecondary"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseUri'), 'templates/bastion.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "BastionSubnetId": {
+                        "value": "[reference('VirtualNetworkSecondary').outputs.BastionSubnetId.value]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}

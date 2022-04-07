@@ -1,0 +1,237 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "skuSizeVM": {
+      "defaultValue": "D2s_v3",
+      "type": "string",
+      "metadata": {
+        "description": "Size of Virtual Machines to use"
+      },
+      "allowedValues": [
+        "D2s_v3",
+        "D2s_v5",
+        "DC2s_v3"
+      ]
+    },
+    "WebVMName": {
+      "type": "string",
+      "defaultValue": "WebVM1",
+      "minLength": 1
+    },
+    "AvailabilityZone": {
+      "type": "string",
+      "metadata": {
+        "description": "Availability zone to deploy to"
+      }
+    },
+    "AppsSubnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet Id of the application tier"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "demouser",
+      "metadata": {
+        "description": "The name of the administrator account of the new VMs"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "defaultValue": "Demo!pass123",
+      "metadata": {
+        "description": "The password for the administrator account of the new VMs"
+      }
+    },
+    "domainToJoin": {
+      "type": "string",
+      "metadata": {
+        "description": "Domain FQDN for VMs to join"
+      }
+    },
+    "SQLEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "SQL endpoint to use for the application database"
+      }
+    },
+    "publicIP": {
+      "type": "bool",
+      "metadata": {
+        "description": "Use 'true' to create a VM with a public IP address, 'false' to create a VM without a public IP address"
+      }
+    },
+    "IpDomainNameLabel": {
+      "type": "string",
+      "defaultValue": "[concat('contoso', take(newGuid(), 4))]",
+      "metadata": {
+        "description": "DNS label to use with public IP address"
+      }
+    },
+    "resourceFolder": {
+      "type": "string",
+      "defaultValue": "master/Hands-on%20lab/Resources/"
+    },
+    "baseUri": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
+    }
+  },
+  "variables": {
+    "WebDownloadUrl": "[concat(parameters('baseUri'),parameters('resourceFolder'),'application/ContosoInsuranceIIS.zip')]",
+    "WebScriptUrl": "[concat(parameters('baseUri'),parameters('resourceFolder'),'scripts/deploy-webvm.ps1')]",
+    "ScriptFolder": "[concat('./',parameters('resourceFolder'),'scripts/')]",
+    "WebScriptFileName": "deploy-webvm.ps1",
+    "WebScriptParameters": "[concat(' -zipurl ', variables('WebDownloadUrl'), ' -datasource ', parameters('SQLEndpoint'), '.', parameters('domainToJoin'), ' -password ', parameters('adminPassword'))]",
+    "WebScriptDownload": "[concat('powershell -ExecutionPolicy Unrestricted \"[Net.ServicePointManager]::SecurityProtocol = ''Tls12''; Invoke-WebRequest -uri ', variables('WebScriptUrl') ,' -OutFile ', variables('WebScriptFileName'), ' \"')]",
+    "WebVMImagePublisher": "MicrosoftWindowsServer",
+    "WebVMImageOffer": "WindowsServer",
+    "WebSKU": "2019-Datacenter",
+    "WebVMSize": "[concat('Standard_',parameters('skuSizeVM'))]",
+    "WebVMNicName": "[concat(parameters('WebVMName'), 'NIC')]",
+    "WebVMOSDiskName": "[concat(parameters('WebVMName'), 'OSDisk')]",
+    "WebVMIPName": "[concat(parameters('WebVMName'), 'IP')]",
+    "DiskType": "Premium_LRS",
+    "domainOUPath": "",
+    "domainJoinOptions": 3
+  },
+  "resources": [
+    {
+      "condition": "[parameters('publicIP')]",
+      "name": "[variables('WebVMIPName')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-12-01",
+      "sku": {
+        "name": "Standard"
+      },
+      "zones": [
+        "[parameters('AvailabilityZone')]"
+      ],
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('IpDomainNameLabel')]"
+        }
+      }
+    },
+    {
+      "name": "[variables('WebVMNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[variables('WebVMIPName')]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('AppsSubnetId')]"
+              },
+              "publicIPAddress": "[if(parameters('publicIP'), json(concat('{\"id\": \"', resourceId('Microsoft.Network/publicIPAddresses', variables('WebVMIPName')), '\"')), json('null'))]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('WebVMName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2019-03-01",
+      "dependsOn": [
+        "[variables('WebVMNicName')]"
+      ],
+      "zones": [
+        "[parameters('AvailabilityZone')]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('WebVMSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('WebVMName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('WebVMImagePublisher')]",
+            "offer": "[variables('WebVMImageOffer')]",
+            "sku": "[variables('WebSKU')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[variables('WebVMOSDiskName')]",
+            "caching": "ReadWrite",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "[variables('DiskType')]"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('WebVMNicName'))]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "name": "InstallWebApp",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2019-03-01",
+          "dependsOn": [
+            "[parameters('WebVMName')]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "CustomScriptExtension",
+            "typeHandlerVersion": "1.4",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "commandToExecute": "[concat(variables('WebScriptDownload'),'; powershell -ExecutionPolicy Unrestricted -File ', variables('WebScriptFileName'), ' ', variables('WebScriptParameters'))]"
+            }
+          }
+        },
+        {
+          "name": "JoinDomain",
+          "type": "extensions",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[parameters('WebVMName')]",
+            "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('WebVMName'), 'InstallWebApp')]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Compute",
+            "type": "JsonADDomainExtension",
+            "typeHandlerVersion": "1.3",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "Name": "[parameters('domainToJoin')]",
+              "OUPath": "[variables('domainOUPath')]",
+              "User": "[concat(parameters('domainToJoin'), '\\', parameters('adminUsername'))]",
+              "Restart": "true",
+              "Options": "[variables('domainJoinOptions')]"
+            },
+            "protectedSettings": {
+              "Password": "[parameters('adminPassword')]"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {
+  }
+}

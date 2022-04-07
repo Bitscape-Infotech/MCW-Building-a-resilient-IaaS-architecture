@@ -1,0 +1,56 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "BastionSubnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "Id of the subnet to deploy the Bastion to"
+      }
+    }
+  },
+  "variables": {
+    "BastionIPName": "PrimaryBastionIP",
+    "BastionName": "PrimaryBastion"
+  },
+  "resources": [
+    {
+      "apiVersion": "2019-02-01",
+      "type": "Microsoft.Network/publicIpAddresses",
+      "name": "[variables('BastionIPName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static"
+      }
+    },
+    {
+      "apiVersion": "2019-12-01",
+      "type": "Microsoft.Network/bastionHosts",
+      "name": "[variables('BastionName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[variables('BastionIPName')]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "IpConfig",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('BastionSubnetId')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('BastionIPName'))]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+  }
+}

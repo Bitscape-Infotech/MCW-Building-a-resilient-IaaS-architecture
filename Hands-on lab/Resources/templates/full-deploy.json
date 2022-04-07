@@ -1,0 +1,91 @@
+{ 
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "baseUri": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "https://raw.githubusercontent.com/KitSkin/MCW-Building-a-resilient-IaaS-architecture/november-2020-test-fix/Hands-on%20lab/Resources/",
+            "metadata": {
+                "description": "Base URL for the deployments"
+            }
+        },
+        "location": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "stage": {
+            "type": "int",
+            "minValue": 1,
+            "maxValue": 3,
+            "defaultValue": 1
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "condition": "[greaterOrEquals(parameters('stage'),1)]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "linkedLabVM",
+            "resourceGroup":"LabRG",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('baseUri'),'templates/lab-vm.json')]",
+                    "contentVersion":"1.0.0.0"
+                },
+                "parameters": {
+                    "baseUri": {"value": "[parameters('baseUri')]"}
+                }
+            },
+            "dependsOn": [
+            ]
+        },
+        {
+            "condition": "[greaterOrEquals(parameters('stage'),2)]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "linkedLabIaaS",
+            "resourceGroup":"ContosoRG1",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('baseUri'),'templates/contoso-iaas.json')]",
+                    "contentVersion":"1.0.0.0"
+                },
+                "parameters": {
+                    "baseUri": {"value": "[parameters('baseUri')]"}
+                }
+            },
+            "dependsOn": [
+                "linkedLabVM"
+            ]
+        },
+        {
+            "condition": "[greaterOrEquals(parameters('stage'),3)]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "linkedContosoIaasHA",
+            "resourceGroup":"ContosoRG1",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri":"[concat(parameters('baseUri'),'templates/contoso-iaas-ha.json')]",
+                    "contentVersion":"1.0.0.0"
+                },
+                "parameters": {
+                    "baseUri": {"value": "[parameters('baseUri')]"}
+                }
+            },
+            "dependsOn": [
+                "linkedLabIaaS"
+            ]
+        }
+    ],
+    "outputs": {
+
+    }
+}
