@@ -138,7 +138,7 @@
             }
         },
         {
-            "name": "VM-EUS-PROD-WEBVM",
+            "name": "VM-EUS-PROD-WEB",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -161,7 +161,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "WebVMName": {
-                        "value": "VM-EUS-PROD-WEBVM"
+                        "value": "VM-EUS-PROD-WEB"
                     },
                     "AvailabilityZone": {
                         "value": "1"

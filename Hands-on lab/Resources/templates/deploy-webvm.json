@@ -16,7 +16,7 @@
     },
     "WebVMName": {
       "type": "string",
-      "defaultValue": "VM-EUS-PROD-WEBVM",
+      "defaultValue": "VM-EUS-PROD-WEB",
       "minLength": 1
     },
     "AvailabilityZone": {
