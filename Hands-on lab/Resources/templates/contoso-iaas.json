@@ -30,7 +30,7 @@
         },
         "domainName": {
             "type": "string",
-            "defaultValue": "universalplastics.com",
+            "defaultValue": "uniplastics.com",
             "metadata": {
                 "description": "The FQDN of the Active Directory Domain to be created"
             }

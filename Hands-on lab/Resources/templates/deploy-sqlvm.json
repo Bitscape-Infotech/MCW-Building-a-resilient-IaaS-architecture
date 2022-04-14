@@ -47,7 +47,7 @@
     },
     "domainToJoin": {
       "type": "string",
-      "defaultValue": "universalplastics.com",
+      "defaultValue": "uniplastics.com",
       "metadata": {
         "description": "Domain FQDN for VMs to join"
       }

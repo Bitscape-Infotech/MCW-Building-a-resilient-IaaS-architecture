@@ -1,6 +1,6 @@
 param($password,
     $dbsource,
-    $defaultDnsDomain = "universalplastics.com",
+    $defaultDnsDomain = "uniplastics.com",
     $defaultDomain = $dnsDomain)
 
 Start-Transcript "C:\deploy-sqlvm-log.txt"

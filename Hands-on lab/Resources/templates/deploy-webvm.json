@@ -65,7 +65,7 @@
     },
     "IpDomainNameLabel": {
       "type": "string",
-      "defaultValue": "[concat('universalplastics', take(newGuid(), 4))]",
+      "defaultValue": "[concat('uniplastics', take(newGuid(), 4))]",
       "metadata": {
         "description": "DNS label to use with public IP address"
       }
