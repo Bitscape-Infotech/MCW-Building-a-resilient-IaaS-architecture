@@ -40,14 +40,14 @@
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue": "demouser",
+      "defaultValue": "azureadmin",
       "metadata": {
         "description": "The name of the administrator account of the new VM and domain"
       }
     },
     "adminPassword": {
       "type": "securestring",
-      "defaultValue": "Demo!pass123",
+      "defaultValue": "Bitscape@Secret@55",
       "metadata": {
         "description": "The password for the administrator account of the new VM and domain"
       }
@@ -68,11 +68,11 @@
     },
     "resourceFolder": {
       "type": "string",
-      "defaultValue": "master/Hands-on%20lab/Resources/"
+      "defaultValue": "Resources/"
     },
     "baseUri": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
+      "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/"
     }
   },
   "variables": {
