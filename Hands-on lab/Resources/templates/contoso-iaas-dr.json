@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "skuSizeVM": {
-            "defaultValue": "D2s_v3",
+            "defaultValue": "D2s_v5",
             "type": "string",
             "metadata": {
                 "description": "Size of Virtual Machines to use"
@@ -16,21 +16,21 @@
         },
         "adminUsername": {
             "type": "string",
-            "defaultValue": "demouser",
+            "defaultValue": "azureadmin",
             "metadata": {
                 "description": "The name of the administrator account of the new VM and domain"
             }
         },
         "adminPassword": {
             "type": "securestring",
-            "defaultValue": "Demo!pass123",
+            "defaultValue": "Bitscape@Secret@55",
             "metadata": {
                 "description": "The password for the administrator account of the new VM and domain"
             }
         },
         "domainName": {
             "type": "string",
-            "defaultValue": "contoso.com",
+            "defaultValue": "uniplastics.com",
             "metadata": {
                 "description": "The FQDN of the Active Directory Domain"
             }
@@ -51,11 +51,11 @@
         },
         "baseUri": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
+            "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/"
         },
         "resourceFolder": {
             "type": "string",
-            "defaultValue": "master/Hands-on%20lab/Resources/"
+            "defaultValue": "Resources/"
         }
     },
     "variables": {
