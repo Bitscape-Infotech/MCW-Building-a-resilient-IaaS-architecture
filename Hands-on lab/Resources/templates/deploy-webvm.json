@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "skuSizeVM": {
-      "defaultValue": "D2s_v3",
+      "defaultValue": "D2s_v5",
       "type": "string",
       "metadata": {
         "description": "Size of Virtual Machines to use"
@@ -16,7 +16,7 @@
     },
     "WebVMName": {
       "type": "string",
-      "defaultValue": "WebVM1",
+      "defaultValue": "VM-EUS-PROD-WEBVM",
       "minLength": 1
     },
     "AvailabilityZone": {
@@ -33,14 +33,14 @@
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue": "demouser",
+      "defaultValue": "azureadmin",
       "metadata": {
         "description": "The name of the administrator account of the new VMs"
       }
     },
     "adminPassword": {
       "type": "securestring",
-      "defaultValue": "Demo!pass123",
+      "defaultValue": "Bitscape@Secret@55",
       "metadata": {
         "description": "The password for the administrator account of the new VMs"
       }
@@ -65,18 +65,18 @@
     },
     "IpDomainNameLabel": {
       "type": "string",
-      "defaultValue": "[concat('contoso', take(newGuid(), 4))]",
+      "defaultValue": "[concat('universalplastics', take(newGuid(), 4))]",
       "metadata": {
         "description": "DNS label to use with public IP address"
       }
     },
     "resourceFolder": {
       "type": "string",
-      "defaultValue": "master/Hands-on%20lab/Resources/"
+      "defaultValue": "Resources/"
     },
     "baseUri": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
+      "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/"
     }
   },
   "variables": {

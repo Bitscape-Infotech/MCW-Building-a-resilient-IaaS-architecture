@@ -20,7 +20,7 @@ Add-Type -assembly "system.io.compression.filesystem"
 
 # Replace the database name in the Web.Config
 if ($datasource -ne "keep-default"){
-    (Get-Content "C:\inetpub\wwwroot\Web.config").replace('bcdraog.contoso.com', $datasource) | Set-Content "C:\inetpub\wwwroot\Web.config"
+    (Get-Content "C:\inetpub\wwwroot\Web.config").replace('bcdraog.universalplastics.com', $datasource) | Set-Content "C:\inetpub\wwwroot\Web.config"
 }
 
 # Replace the password in the Web.Config

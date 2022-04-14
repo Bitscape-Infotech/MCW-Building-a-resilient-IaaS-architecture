@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "skuSizeVM": {
-            "defaultValue": "D2s_v3",
+            "defaultValue": "D2s_v5",
             "type": "string",
             "metadata": {
                 "description": "Size of Virtual Machines to use"
@@ -16,21 +16,21 @@
         },
         "adminUsername": {
             "type": "string",
-            "defaultValue": "demouser",
+            "defaultValue": "azureadmin",
             "metadata": {
                 "description": "The name of the administrator account of the new VM and domain"
             }
         },
         "adminPassword": {
             "type": "securestring",
-            "defaultValue": "Demo!pass123",
+            "defaultValue": "Bitscape@Secret@55",
             "metadata": {
                 "description": "The password for the administrator account of the new VM and domain"
             }
         },
         "domainName": {
             "type": "string",
-            "defaultValue": "contoso.com",
+            "defaultValue": "universalplastics.com",
             "metadata": {
                 "description": "The FQDN of the Active Directory Domain to be created"
             }
@@ -45,7 +45,7 @@
         }
     },
     "variables": {
-        "vnetName": "VNet1"
+        "vnetName": "VNET-EUS-PROD"
     },
     "resources": [
         {
@@ -68,7 +68,7 @@
             }
         },
         {
-            "name": "ADVM1",
+            "name": "VM-EUS-DC-PROD",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -91,7 +91,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "ADVMName": {
-                        "value": "ADVM1"
+                        "value": "VM-EUS-DC-PROD"
                     },
                     "AvailabilityZone": {
                         "value": "1"
@@ -119,7 +119,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
-                "Microsoft.Resources/deployments/ADVM1"
+                "Microsoft.Resources/deployments/VM-EUS-DC-PROD"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -132,15 +132,13 @@
                         "value": "[variables('vnetName')]"
                     },
                     "DNSIPs": {
-                        "value": [
-                            "[reference('ADVM1').outputs.ADVM1PrivateIP.value]"
-                        ]
+                        "value": ["10.0.3.100"]
                     }
                 }
             }
         },
         {
-            "name": "WebVM1",
+            "name": "VM-EUS-PROD-WEBVM",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -163,7 +161,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "WebVMName": {
-                        "value": "WebVM1"
+                        "value": "VM-EUS-PROD-WEBVM"
                     },
                     "AvailabilityZone": {
                         "value": "1"
@@ -181,7 +179,7 @@
                         "value": true
                     },
                     "SQLEndpoint": {
-                        "value": "SQLVM1"
+                        "value": "VM-EUS-PROD-SQL"
                     },
                     "domainToJoin": {
                         "value": "[parameters('domainName')]"
@@ -190,7 +188,7 @@
             }
         },
         {
-            "name": "SQLVM1",
+            "name": "VM-EUS-PROD-SQL",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -213,7 +211,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "SqlVMName": {
-                        "value": "SQLVM1"
+                        "value": "VM-EUS-PROD-SQL"
                     },
                     "AvailabilityZone": {
                         "value": "1"

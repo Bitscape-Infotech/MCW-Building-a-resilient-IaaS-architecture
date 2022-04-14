@@ -18,8 +18,8 @@
   },
   "variables": {
     "NSGName": "AppsNSG",
-    "NATName": "[concat(parameters('VNetName'), 'NAT')]",
-    "NATIPName": "[concat(variables('NATName'), 'IP')]",
+    "NATName": "[concat(parameters('VNetName'), '-NAT')]",
+    "NATIPName": "[concat(variables('NATName'), '-IP')]",
     "VNetPrefix": "10.0.0.0/16",
     "AppsSubnetName": "Apps",
     "AppsSubnetPrefix": "10.0.1.0/24",
