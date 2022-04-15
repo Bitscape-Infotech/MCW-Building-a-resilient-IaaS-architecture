@@ -31,7 +31,7 @@ workflow ASRSQLFailover
     Write-Output "RecoveryPlanContext:"
     Write-Output $($RecoveryPlanContext | ConvertTo-Json -Depth 5)
 
-    $scriptBaseUri = "https://cloudworkshop.blob.core.windows.net/building-resilient-iaas-architecture/lab-resources/june-2020-update/scripts"
+    $scriptBaseUri = "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/Resources/scripts/"
     $ASRFailoverScriptPath = "$scriptBaseUri/ASRFailOver.ps1"
 	$ASRFailoverScriptPathVM-EUS-PROD-SQL = "$scriptBaseUri/ASRFailOverVM-EUS-PROD-SQL.ps1"
 	$ASRFailoverScriptPathVMEUS-PROD-SQL2 = "$scriptBaseUri/ASRFailOverVMEUS-PROD-SQL2.ps1"
