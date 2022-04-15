@@ -12,11 +12,11 @@ Microsoft Cloud Workshop: BCDR
 .What does this script do?  
  - When there is a Failover from Primary to Secondary the RecoveryPlanContext.FailoverDirection property 
    is set to: "PrimaryToSecondary", the script will force a manual failover allowing dataloss of the 
-   SQL AOG from SQLVM1 (Primary Replica/Auto) to SQLVM3(Secondary Replica/Manual) and then set the 
-   SQLVM1 and SQLVM2 to resume data movement (Data movement is Paused by SQL during manual failovers).
+   SQL AOG from VM-EUS-PROD-SQL (Primary Replica/Auto) to VM-PROD-SQL-3(Secondary Replica/Manual) and then set the 
+   VM-EUS-PROD-SQL and VMEUS-PROD-SQL2 to resume data movement (Data movement is Paused by SQL during manual failovers).
  
  - When there is a Failback from Secondary to Primary the RecoveryPlanContext.FailoverDirection property 
-   is set to: "SecondaryToPrimary" and the script will then set SQLVM1 to the Primary Replica.  SQLVM3
+   is set to: "SecondaryToPrimary" and the script will then set VM-EUS-PROD-SQL to the Primary Replica.  VM-PROD-SQL-3
    will remain a Syncronous partern and must be manually configured back to Asynchronous / Manual once the
    BCDR team agrees this is a safe course of action.
  
@@ -33,14 +33,14 @@ workflow ASRSQLFailover
 
     $scriptBaseUri = "https://cloudworkshop.blob.core.windows.net/building-resilient-iaas-architecture/lab-resources/june-2020-update/scripts"
     $ASRFailoverScriptPath = "$scriptBaseUri/ASRFailOver.ps1"
-	$ASRFailoverScriptPathSQLVM1 = "$scriptBaseUri/ASRFailOverSQLVM1.ps1"
-	$ASRFailoverScriptPathSQLVM2 = "$scriptBaseUri/ASRFailOverSQLVM2.ps1"
+	$ASRFailoverScriptPathVM-EUS-PROD-SQL = "$scriptBaseUri/ASRFailOverVM-EUS-PROD-SQL.ps1"
+	$ASRFailoverScriptPathVMEUS-PROD-SQL2 = "$scriptBaseUri/ASRFailOverVMEUS-PROD-SQL2.ps1"
     $ASRFailBackScriptPath = "$scriptBaseUri/ASRFailBack.ps1"
     
     Write-Output "Script URLs:"
     Write-Output $ASRFailoverScriptPath
-    Write-Output $ASRFailoverScriptPathSQLVM1
-    Write-Output $ASRFailoverScriptPathSQLVM2
+    Write-Output $ASRFailoverScriptPathVM-EUS-PROD-SQL
+    Write-Output $ASRFailoverScriptPathVMEUS-PROD-SQL2
     Write-Output $ASRFailBackScriptPath
     
     $tempPath = "$env:TEMP\script.ps1"
@@ -74,10 +74,10 @@ workflow ASRSQLFailover
         $SQLVMRG = $RPVariable.SecondarySiteRG
         $SQLVMName = $RPVariable.SecondarySiteSQLVMName
         $Path = $RPVariable.SecondarySiteSQLPath
-		$SQLVM1Name = $RPVariable.PrimarySiteSQLVM1Name
-		$SQLVM2Name = $RPVariable.PrimarySiteSQLVM2Name
-		$SQLVM1RG = $RPVariable.PrimarySiteRG
-		$SQLVM2RG = $RPVariable.PrimarySiteRG
+		$VM-EUS-PROD-SQLName = $RPVariable.PrimarySiteVM-EUS-PROD-SQLName
+		$VMEUS-PROD-SQL2Name = $RPVariable.PrimarySiteVMEUS-PROD-SQL2Name
+		$VM-EUS-PROD-SQLRG = $RPVariable.PrimarySiteRG
+		$VMEUS-PROD-SQL2RG = $RPVariable.PrimarySiteRG
 		        
         InlineScript {
             Write-output "Failing over from Primary Site to Secondary Site. The new Primary Replica is on:" $Using:SQLVMName
@@ -85,24 +85,24 @@ workflow ASRSQLFailover
             Invoke-AzVMRunCommand -ResourceGroupName $Using:SQLVMRG -VMName $Using:SQLVMName -ScriptPath $Using:tempPath -CommandId 'RunPowerShellScript'
             Write-output "Completed AG Failover to Secondary Site"
 
-            Write-output "Resuming Data Movement on SQLVM1"
-            Invoke-WebRequest $Using:ASRFailoverScriptPathSQLVM1 -OutFile $Using:tempPath
-            Invoke-AzVMRunCommand -ResourceGroupName $Using:SQLVM1RG -VMName $Using:SQLVM1Name -ScriptPath $Using:tempPath -CommandId 'RunPowerShellScript'
-            Write-output "Data Movement Resumed on SQLVM1"
+            Write-output "Resuming Data Movement on VM-EUS-PROD-SQL"
+            Invoke-WebRequest $Using:ASRFailoverScriptPathVM-EUS-PROD-SQL -OutFile $Using:tempPath
+            Invoke-AzVMRunCommand -ResourceGroupName $Using:VM-EUS-PROD-SQLRG -VMName $Using:VM-EUS-PROD-SQLName -ScriptPath $Using:tempPath -CommandId 'RunPowerShellScript'
+            Write-output "Data Movement Resumed on VM-EUS-PROD-SQL"
 
-            Write-output "Resuming Data Movement on SQLVM2"
-            Invoke-WebRequest $Using:ASRFailoverScriptPathSQLVM2 -OutFile $Using:tempPath
-            Invoke-AzVMRunCommand -ResourceGroupName $Using:SQLVM1RG -VMName $Using:SQLVM2Name -ScriptPath $Using:tempPath -CommandId 'RunPowerShellScript'
-            Write-output "Data Movement Resumed on SQLVM2"
+            Write-output "Resuming Data Movement on VMEUS-PROD-SQL2"
+            Invoke-WebRequest $Using:ASRFailoverScriptPathVMEUS-PROD-SQL2 -OutFile $Using:tempPath
+            Invoke-AzVMRunCommand -ResourceGroupName $Using:VM-EUS-PROD-SQLRG -VMName $Using:VMEUS-PROD-SQL2Name -ScriptPath $Using:tempPath -CommandId 'RunPowerShellScript'
+            Write-output "Data Movement Resumed on VMEUS-PROD-SQL2"
 		}
     }
     else {
         $SQLVMRG = $RPVariable.PrimarySiteRG
-        $SQLVMName = $RPVariable.PrimarySiteSQLVM1Name
+        $SQLVMName = $RPVariable.PrimarySiteVM-EUS-PROD-SQLName
         $Path = $RPVariable.PrimarySiteSQLPath
         
         InlineScript {
-            Write-output "Failing back from Secondary Site to Primary Site. The new Primary Replica is on SQLVM1"
+            Write-output "Failing back from Secondary Site to Primary Site. The new Primary Replica is on VM-EUS-PROD-SQL"
             Invoke-WebRequest $Using:ASRFailBackScriptPath -OutFile $Using:tempPath
             Invoke-AzVMRunCommand -ResourceGroupName $Using:SQLVMRG -VMName $Using:SQLVMName -ScriptPath $Using:tempPath -CommandId 'RunPowerShellScript'
             Write-output "Completed AG Failback to Primary Site"
