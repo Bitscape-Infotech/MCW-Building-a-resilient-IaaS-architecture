@@ -44,11 +44,11 @@
         },
         "baseUri": {
             "type": "string",
-            "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/"
+            "defaultValue": "https://raw.githubusercontent.com/Bitscape-Infotech/MCW-Building-a-resilient-IaaS-architecture/"
         },
         "resourceFolder": {
             "type": "string",
-            "defaultValue": "Resources/"
+            "defaultValue": "main/Hands-on%20lab/Resources/"
         }
     },
     "variables": {
