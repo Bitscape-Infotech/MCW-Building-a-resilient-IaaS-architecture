@@ -188,7 +188,7 @@
             }
         },
         {
-            "name": "VM-EUS-PROD-SQL",
+            "name": "sqlvm",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -211,7 +211,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "SqlVMName": {
-                        "value": "VM-EUS-PROD-SQL"
+                        "value": "sqlvm"
                     },
                     "AvailabilityZone": {
                         "value": "1"
