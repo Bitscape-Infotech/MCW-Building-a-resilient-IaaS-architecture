@@ -14,7 +14,7 @@ Invoke-WebRequest -URI $scripturl -OutFile $script
 
 Write-Output "Create credential"
 $securePwd =  ConvertTo-SecureString "$password" -AsPlainText -Force
-$username = "$env:COMPUTERNAME\$user"
+$username = "uniplastics\azureadmin"
 # If ($user -notmatch "[@\\]") {
 # 	$username = "$env:COMPUTERNAME\$user"
 # } else {
