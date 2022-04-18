@@ -84,30 +84,6 @@
             }
         },
         {
-            "name": "Peering",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
-            "dependsOn": [
-                "VirtualNetworkSecondary"
-            ],
-            "location": "[deployment().location]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[concat(parameters('baseUri'), parameters('resourceFolder'), 'templates/peering.json')]",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "VNet1Id": {
-                        "value": "[concat(subscription().Id, '/resourceGroups/', parameters('PrimaryRG'), '/providers/Microsoft.Network/virtualNetworks/', variables('vnetNamePrimary'))]"
-                    },
-                    "VNet2Id": {
-                        "value": "[concat(subscription().Id, '/resourceGroups/', parameters('SecondaryRG'), '/providers/Microsoft.Network/virtualNetworks/', variables('vnetNameSecondary'))]"
-                    }
-                }
-            }
-        },
-        {
             "name": "VirtualNetworkSecondaryWithPrimaryDNS",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
