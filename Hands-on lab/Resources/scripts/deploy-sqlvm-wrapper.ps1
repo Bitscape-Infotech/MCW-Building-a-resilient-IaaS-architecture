@@ -14,11 +14,12 @@ Invoke-WebRequest -URI $scripturl -OutFile $script
 
 Write-Output "Create credential"
 $securePwd =  ConvertTo-SecureString "$password" -AsPlainText -Force
-If ($user -notmatch "[@\\]") {
-	$username = "$env:COMPUTERNAME\$user"
-} else {
-	$username = $user
-}
+$username = "uniplastics\azureadmin"
+# If ($user -notmatch "[@\\]") {
+# 	$username = "$env:COMPUTERNAME\$user"
+# } else {
+# 	$username = $user
+# }
 if ($user -match "(?<user>[^@]+)(@(?<dnsDomain>[^@\s]+))") {
 	$dnsDomain = $matches.dnsDomain
 	$ArgumentList = @($password, $dbsource, $dnsDomain)
