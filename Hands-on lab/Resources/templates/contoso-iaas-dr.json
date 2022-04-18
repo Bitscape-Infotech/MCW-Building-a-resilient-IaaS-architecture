@@ -51,11 +51,11 @@
         },
         "baseUri": {
             "type": "string",
-            "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/"
+            "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
         },
         "resourceFolder": {
             "type": "string",
-            "defaultValue": "Resources/"
+            "defaultValue": "master/Hands-on%20lab/Resources/"
         }
     },
     "variables": {
@@ -79,6 +79,30 @@
                 "parameters": {
                     "VNetName": {
                         "value": "[variables('vnetNameSecondary')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Peering",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "dependsOn": [
+                "VirtualNetworkSecondary"
+            ],
+            "location": "[deployment().location]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(parameters('baseUri'), parameters('resourceFolder'), 'templates/peering.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "VNet1Id": {
+                        "value": "[concat(subscription().Id, '/resourceGroups/', parameters('PrimaryRG'), '/providers/Microsoft.Network/virtualNetworks/', variables('vnetNamePrimary'))]"
+                    },
+                    "VNet2Id": {
+                        "value": "[concat(subscription().Id, '/resourceGroups/', parameters('SecondaryRG'), '/providers/Microsoft.Network/virtualNetworks/', variables('vnetNameSecondary'))]"
                     }
                 }
             }
@@ -111,7 +135,7 @@
             }
         },
         {
-            "name": "VM-EUS-DC-PRO-3",
+            "name": "VM-DC-PROD-3",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "resourceGroup": "[parameters('SecondaryRG')]",
@@ -135,7 +159,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "ADVMName": {
-                        "value": "VM-EUS-DC-PRO-3"
+                        "value": "VM-DC-PROD-3"
                     },
                     "AvailabilityZone": {
                         "value": "1"
@@ -162,7 +186,7 @@
             }
         },
         {
-            "name": "VM-EUS-DC-PRO-4",
+            "name": "VM-DC-PROD-4",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "resourceGroup": "[parameters('SecondaryRG')]",
@@ -186,7 +210,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "ADVMName": {
-                        "value": "VM-EUS-DC-PRO-4"
+                        "value": "VM-DC-PROD-4"
                     },
                     "AvailabilityZone": {
                         "value": "2"
@@ -218,8 +242,8 @@
             "apiVersion": "2019-10-01",
             "resourceGroup": "[parameters('SecondaryRG')]",
             "dependsOn": [
-                "VM-EUS-DC-PRO-3",
-                "VM-EUS-DC-PRO-4"
+                "VM-DC-PROD-3",
+                "VM-DC-PROD-4"
             ],
             "properties": {
                 "mode": "Incremental",
