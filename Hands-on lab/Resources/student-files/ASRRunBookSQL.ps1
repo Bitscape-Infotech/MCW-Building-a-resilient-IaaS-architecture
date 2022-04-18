@@ -12,11 +12,11 @@ Microsoft Cloud Workshop: BCDR
 .What does this script do?  
  - When there is a Failover from Primary to Secondary the RecoveryPlanContext.FailoverDirection property 
    is set to: "PrimaryToSecondary", the script will force a manual failover allowing dataloss of the 
-   SQL AOG from SQLVM1 (Primary Replica/Auto) to VM-PROD-SQL-3(Secondary Replica/Manual) and then set the 
+   SQL AOG from SQLVM1 (Primary Replica/Auto) to SQLVM3(Secondary Replica/Manual) and then set the 
    SQLVM1 and SQLVM2 to resume data movement (Data movement is Paused by SQL during manual failovers).
  
  - When there is a Failback from Secondary to Primary the RecoveryPlanContext.FailoverDirection property 
-   is set to: "SecondaryToPrimary" and the script will then set SQLVM1 to the Primary Replica.  VM-PROD-SQL-3
+   is set to: "SecondaryToPrimary" and the script will then set SQLVM1 to the Primary Replica.  SQLVM3
    will remain a Syncronous partern and must be manually configured back to Asynchronous / Manual once the
    BCDR team agrees this is a safe course of action.
  
@@ -93,7 +93,7 @@ workflow ASRSQLFailover
             Write-output "Resuming Data Movement on SQLVM2"
             Invoke-WebRequest $Using:ASRFailoverScriptPathSQLVM2 -OutFile $Using:tempPath
             Invoke-AzVMRunCommand -ResourceGroupName $Using:SQLVM1RG -VMName $Using:SQLVM2Name -ScriptPath $Using:tempPath -CommandId 'RunPowerShellScript'
-            Write-output "Data Movement Resumed on VMEUS-PROD-SQL2"
+            Write-output "Data Movement Resumed on SQLVM2"
 		}
     }
     else {
