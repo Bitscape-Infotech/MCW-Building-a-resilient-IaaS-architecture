@@ -16,5 +16,5 @@ Microsoft Cloud Workshop: BCDR
  
 #>
 Import-Module sqlps
-$DBPath = "SQLSERVER:\Sql\VM-EUS-PROD-SQL\DEFAULT\AvailabilityGroups\BCDRAOG\AvailabilityDatabases"
+$DBPath = "SQLSERVER:\Sql\SQLVM1\DEFAULT\AvailabilityGroups\BCDRAOG\AvailabilityDatabases"
 Get-ChildItem $DBPath | Resume-SqlAvailabilityDatabase
