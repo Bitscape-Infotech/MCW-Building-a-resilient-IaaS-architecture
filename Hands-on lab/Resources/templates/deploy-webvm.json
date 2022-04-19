@@ -16,7 +16,7 @@
     },
     "WebVMName": {
       "type": "string",
-      "defaultValue": "VM-EUS-PROD-WEB",
+      "defaultValue": "VM-EUS-WEB-2",
       "minLength": 1
     },
     "AvailabilityZone": {
@@ -72,11 +72,11 @@
     },
     "resourceFolder": {
       "type": "string",
-      "defaultValue": "Resources/"
+      "defaultValue": "master/Hands-on%20lab/Resources/"
     },
     "baseUri": {
       "type": "string",
-      "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/"
+      "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
     }
   },
   "variables": {

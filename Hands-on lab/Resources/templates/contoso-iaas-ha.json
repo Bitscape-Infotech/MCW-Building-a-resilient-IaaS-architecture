@@ -59,7 +59,7 @@
     },
     "resources": [
         {
-            "name": "VM-EUS-DC2-PROD",
+            "name": "VM-EUS-DC-2",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -81,7 +81,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "ADVMName": {
-                        "value": "VM-EUS-DC2-PROD"
+                        "value": "VM-EUS-DC-2"
                     },
                     "AvailabilityZone": {
                         "value": "2"
@@ -137,7 +137,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
-                "Microsoft.Resources/deployments/VM-EUS-DC2-PROD"
+                "Microsoft.Resources/deployments/VM-EUS-DC-2"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -156,7 +156,7 @@
             }
         },
         {
-            "name": "VM-PROD-WEB2",
+            "name": "VM-EUS-WEB-2",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -178,7 +178,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "WebVMName": {
-                        "value": "VM-PROD-WEB2"
+                        "value": "VM-EUS-WEB-2"
                     },
                     "AvailabilityZone": {
                         "value": "2"
@@ -196,7 +196,7 @@
                         "value": false
                     },
                     "SQLEndpoint": {
-                        "value": "VMEUS-PROD-SQL2"
+                        "value": "VM-EUS-SQL-2"
                     },
                     "domainToJoin": {
                         "value": "[parameters('domainName')]"
@@ -205,7 +205,7 @@
             }
         },
         {
-            "name": "VMEUS-PROD-SQL2",
+            "name": "VM-EUS-SQL-2",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2016-09-01",
             "dependsOn": [
@@ -227,7 +227,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "SqlVMName": {
-                        "value": "VMEUS-PROD-SQL2"
+                        "value": "VM-EUS-SQL-2"
                     },
                     "AvailabilityZone": {
                         "value": "2"

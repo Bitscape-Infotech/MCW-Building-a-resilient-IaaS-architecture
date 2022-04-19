@@ -16,7 +16,7 @@
     },
     "SQLVMName": {
       "type": "string",
-      "defaultValue": "sqlvm",
+      "defaultValue": "VM-EUS-SQL-2",
       "minLength": 1
     },
     "AvailabilityZone": {
