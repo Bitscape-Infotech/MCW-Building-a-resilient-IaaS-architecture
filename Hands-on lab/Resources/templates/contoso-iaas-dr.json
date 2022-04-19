@@ -37,7 +37,7 @@
         },
         "PrimaryRG": {
             "type": "string",
-            "defaultValue": "RG-PRI-EUS-PROD",
+            "defaultValue": "RG-EUS-PROD-1",
             "metadata": {
                 "description": "Resource group name of the primary region (must already exist)"
             }
@@ -59,8 +59,8 @@
         }
     },
     "variables": {
-        "vnetNamePrimary": "VNET-EUS-PROD",
-        "vnetNameSecondary": "VNET-EUS-PROD-2"
+        "vnetNamePrimary": "RG-EUS-PROD-1",
+        "vnetNameSecondary": "RG-EUS-PROD-2"
     },
     "resources": [
         {
@@ -135,7 +135,7 @@
             }
         },
         {
-            "name": "VM-DC-PROD-3",
+            "name": "VM-EUS-DC-3",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "resourceGroup": "[parameters('SecondaryRG')]",
@@ -159,7 +159,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "ADVMName": {
-                        "value": "VM-DC-PROD-3"
+                        "value": "VM-EUS-DC-3"
                     },
                     "AvailabilityZone": {
                         "value": "1"
@@ -186,7 +186,7 @@
             }
         },
         {
-            "name": "VM-DC-PROD-4",
+            "name": "VM-EUS-DC-4",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "resourceGroup": "[parameters('SecondaryRG')]",
@@ -210,7 +210,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "ADVMName": {
-                        "value": "VM-DC-PROD-4"
+                        "value": "VM-EUS-DC-4"
                     },
                     "AvailabilityZone": {
                         "value": "2"
@@ -242,8 +242,8 @@
             "apiVersion": "2019-10-01",
             "resourceGroup": "[parameters('SecondaryRG')]",
             "dependsOn": [
-                "VM-DC-PROD-3",
-                "VM-DC-PROD-4"
+                "VM-EUS-DC-3",
+                "VM-EUS-DC-4"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -291,7 +291,7 @@
             }
         },
         {
-            "name": "VM-PROD-SQL-3",
+            "name": "VM-EUS-SQL-3",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-10-01",
             "resourceGroup": "[parameters('SecondaryRG')]",
@@ -315,7 +315,7 @@
                         "value": "[parameters('resourceFolder')]"
                     },
                     "SqlVMName": {
-                        "value": "VM-PROD-SQL-3"
+                        "value": "VM-EUS-SQL-3"
                     },
                     "AvailabilityZone": {
                         "value": "1"
