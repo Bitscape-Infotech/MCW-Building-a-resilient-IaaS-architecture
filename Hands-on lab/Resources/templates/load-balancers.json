@@ -4,7 +4,7 @@
   "parameters": {
     "WebLBDnsLabelPrefix": {
       "type": "string",
-      "defaultValue": "contoso-",
+      "defaultValue": "uniplastics-",
       "minLength": 1
     },
     "Environment": {
@@ -28,8 +28,8 @@
     }
   },
   "variables": {
-    "InternalLoadBalancerName": "[concat('ContosoSQLLB', parameters('Environment'))]",
-    "ExternalLoadBalancerName": "[concat('ContosoWebLB', parameters('Environment'))]",
+    "InternalLoadBalancerName": "[concat('SQLLB', parameters('Environment'))]",
+    "ExternalLoadBalancerName": "[concat('WebLB', parameters('Environment'))]",
     "FrontEndName": "FrontEnd1",
     "RuleName": "Rule1",
     "BackEndPoolName": "BackEndPool1",
