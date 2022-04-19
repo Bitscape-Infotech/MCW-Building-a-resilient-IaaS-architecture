@@ -59,8 +59,8 @@
         }
     },
     "variables": {
-        "vnetNamePrimary": "RG-EUS-PROD-1",
-        "vnetNameSecondary": "RG-EUS-PROD-2"
+        "vnetNamePrimary": "VNET-EUS-PROD",
+        "vnetNameSecondary": "VNET-EUS-PROD-2"
     },
     "resources": [
         {
