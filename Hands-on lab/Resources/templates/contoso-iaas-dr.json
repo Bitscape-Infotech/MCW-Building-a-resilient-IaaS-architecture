@@ -51,7 +51,7 @@
         },
         "baseUri": {
             "type": "string",
-            "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/Resources/"
+            "defaultValue": "https://aemsplabstrg.blob.core.windows.net/resilientlaasarchitecture/"
         },
         "resourceFolder": {
             "type": "string",
