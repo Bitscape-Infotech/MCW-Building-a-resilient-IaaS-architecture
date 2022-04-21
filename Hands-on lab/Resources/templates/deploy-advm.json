@@ -170,27 +170,7 @@
               }
             ]
           }
-        },
-        "resources": [
-          {
-            "name": "InstallAD",
-            "type": "extensions",
-            "location": "[resourceGroup().location]",
-            "apiVersion": "2019-03-01",
-            "dependsOn": [
-              "[parameters('ADVMName')]"
-            ],
-            "properties": {
-              "publisher": "Microsoft.Compute",
-              "type": "CustomScriptExtension",
-              "typeHandlerVersion": "1.9",
-              "autoUpgradeMinorVersion": true,
-              "settings": {
-                "commandToExecute": "[concat(variables('scriptDownload'),'; powershell -ExecutionPolicy Unrestricted -File ', variables('scriptFileName'), ' ', variables('scriptParameters'))]"
-              }
-            }
-          }
-        ]
+        }
       },
       {
         "type": "Microsoft.Resources/deploymentScripts",
