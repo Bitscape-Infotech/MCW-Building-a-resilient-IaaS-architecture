@@ -163,25 +163,6 @@
       },
       "resources": [
         {
-          "name": "InstallDB",
-          "type": "extensions",
-          "location": "[resourceGroup().location]",
-          "apiVersion": "2019-03-01",
-          "dependsOn": [
-            "[parameters('SQLVMName')]",
-            "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('SQLVMName'), 'JoinDomain')]"
-          ],
-          "properties": {
-            "publisher": "Microsoft.Compute",
-            "type": "CustomScriptExtension",
-            "typeHandlerVersion": "1.10",
-            "autoUpgradeMinorVersion": true,
-            "settings": {
-              "commandToExecute": "[concat(variables('SQLScriptDownload'),'; powershell -ExecutionPolicy Unrestricted -File ', variables('SQLScriptFileName'), ' ', variables('SQLScriptParameters'))]"
-            }
-          }
-        },
-        {
           "name": "JoinDomain",
           "type": "extensions",
           "location": "[resourceGroup().location]",
@@ -209,6 +190,5 @@
       ]
     }
   ],
-  "outputs": {
-  }
+  "outputs": {}
 }
