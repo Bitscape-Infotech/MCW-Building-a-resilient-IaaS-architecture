@@ -68,11 +68,11 @@
       },
       "resourceFolder": {
         "type": "string",
-        "defaultValue": "main/Hands-on%20lab/Resources/"
+        "defaultValue": "master/Hands-on%20lab/Resources/"
       },
       "baseUri": {
         "type": "string",
-        "defaultValue": "https://raw.githubusercontent.com/Bitscape-Infotech/MCW-Building-a-resilient-IaaS-architecture/"
+        "defaultValue": "https://raw.githubusercontent.com/microsoft/MCW-Building-a-resilient-IaaS-architecture/"
       }
     },
     "variables": {
